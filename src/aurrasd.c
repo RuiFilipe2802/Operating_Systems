@@ -19,23 +19,18 @@ int main(int argc, char *argv[]){
   int wri = open("logs.txt", O_WRONLY | O_CREAT | O_TRUNC, 0600);
   int rea = open("logs.txt", O_RDONLY, 0600);
   int r;
-  //char arraRec[10];
-  int sizeR;
-  int tamanho;
-  char *rec[tamanho];
-
+  int size;
+  int args;
 
   int fd = open("fifoC_S", O_RDONLY);
-  read(fd, &tamanho, sizeof(int));
-  printf("Tamanho:%d\n", tamanho);
-  for(int i = 0; i<tamanho; i++){
-    read(fd, &sizeR, sizeof(int));
-    printf("tamanho:%d\n", sizeR);
-    char arraRec[sizeR];
-    read(fd, &arraRec,sizeR);
-    rec[i]= arraRec;
-    printf("Arg:%s\n", rec[i]);
-  }
+  read(fd, &args, sizeof(int));         // GET NUMBER OF ARGUMENTS
+  printf("%d\n", args);
+  read(fd, &size, sizeof(int));         // GET SIZE MESSAGE
+  printf("%d\n", size);
+  char buffer[size];
+  read(fd, buffer, size-1);               // GET MESSAGE
+  write(1, buffer, size);
 
-    return 0;
+  
+  return 0;
 }

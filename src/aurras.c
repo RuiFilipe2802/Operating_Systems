@@ -17,6 +17,11 @@ int main(int argc, char *argv[]){
     char *args[10];
     fd = open("fifoC_S", O_WRONLY);
     int sizeArgs=0;
+    int i;
+    int size;
+    char *arguments[10];
+    char str[100];
+    int argum = argc-2;
     //write(fd, buffer, sizeof(buffer));
 
     if(argc == 1){ //     Show usage protocol
@@ -28,29 +33,23 @@ int main(int argc, char *argv[]){
         write(1, "STATUS...", 10);
     }
 
-   if(strcmp(argv[1], "transform") == 0){
-       if(argc < 3){
+    if(strcmp(argv[1], "transform") == 0){
+        if(argc < 3){
            perror("Command invalid");
            return 1;
-       }
-       int tam= argc - 2;
-        write(fd, &tam,sizeof(int));
-        for(int i = 2; i < argc; i++){
-            args[i-2] = argv[i];
-            //printf("%s\n", args[i-2]);
-            sizeArgs =strlen(args[i-2])+1;
-            printf("Tamanho:%d\n", sizeArgs);
-            write(fd, &sizeArgs,sizeof(int));
-            write(fd, args[i-2], sizeArgs);
         }
-
-        //printf("Tamanho:%d\n", sizeArgs);
-        //write(fd, &sizeArgs,sizeof(int));
-        //write(fd, &args[0], sizeArgs);
-
-   }
-
-
+        for(i = 0;i < argum;i++){
+            arguments[i] = argv[i+2];    
+            strcat(str,arguments[i]);
+            strcat(str," ");
+            size = size + strlen(arguments[i])+1;
+        }
+        write(fd, &argum, sizeof(int));
+        write(fd, &size, sizeof(int));
+        write(fd, str, sizeof(str));
+        printf("%s", str);
+    }
 
     return 0;
 }
+
