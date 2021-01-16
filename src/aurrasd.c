@@ -32,14 +32,24 @@ int main(int argc, char *argv[]){
   mkfifo("fifoC_S", 0666);      // CLIENTE -> SERVIDOR
   mkfifo("fifoS_C", 0666);      // SERVIDOR -> CLIENTE
 
-  char path[68] = "../grupo-03/bin/aurrasd-filters/";
+  char path[13] = "../grupo-03/";
+  strcat(path, argv[2]);
+  char filtersDestination[13] = "../grupo-03/";
+  strcat(filtersDestination, argv[1]);
+  int configFile = open(filtersDestination, O_RDONLY);
   char iF[9] = "samples/";
   int file_input, file_output;
   char buf[25];
   int sizeBuf;
+  int nProc = 0;
   int nLine = 0;
-  int configFile = open("../grupo-03/etc/aurrasd.conf", O_RDONLY);
+  
   char filtersFromClient[10][MAX]; 
+
+  if(argc == 1){ //     Show usage protocol
+        write(1, "./aurrasd config-filename filters-folder\n", 42);
+        return 1;
+  }
 
   while((sizeBuf = readln(configFile, buf, sizeof(buf))) > 0){
    
@@ -60,12 +70,13 @@ int main(int argc, char *argv[]){
     if((nLine % 3) == 2){           // NUMBER OF FILTERS
       numFilters = atoi(buf);
       arrN[num] = numFilters;
+      nProc = nProc +numFilters;
       //printf("FILTER NUMBER %d: %d\n",num, arrN[num]);
       num++;  
     }
     nLine++;
   }
-
+  printf("%d", nProc);
 
   //int wri = open("logs.txt", O_WRONLY | O_CREAT | O_TRUNC, 0600);
   //int rea = open("logs.txt", O_RDONLY, 0600);
@@ -76,6 +87,10 @@ int main(int argc, char *argv[]){
   char *p = NULL;
   int i = 0;
   char *inputFile, *outputFile;
+  int j, status;
+  pid_t pid;
+
+  while(1){
 
   int fd = open("fifoC_S", O_RDONLY);
   read(fd, &args, sizeof(int));           // GET NUMBER OF ARGUMENTS
@@ -89,21 +104,46 @@ int main(int argc, char *argv[]){
   }
   inputFile = argums[0];
   outputFile = argums[1];
-  
+
   for(m = 2;m < args;m++){ 
     strcpy(filtersFromClient[m-2],argums[m]);
+    printf("%s\n", filtersFromClient[m-2]);
   }
 
-  strcat(path, arrExec[4][MAX]);
-  strcat(iF, inputFile);
-  file_input = open(iF, O_RDONLY);
-  file_output = open(outputFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-  dup2(file_input, 0); 
-  close(file_input);
-  dup2(file_output, 1);
-  close(file_output);
-
   //execl(path, path, NULL);
-  
+  }
   return 0;
 }
+/*
+for (j = 0; j != nProc; j++) {  //ciclo criacao filhos
+      pid = fork();
+      switch (pid) {
+        case -1: //erro
+                perror("fork");
+                return 1;
+        case 0: //filhos
+                
+                strcat(path, arrExec[4][MAX]);
+                strcat(iF, inputFile);
+                file_input = open(iF, O_RDONLY);
+                file_output = open(outputFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                dup2(file_input, 0); 
+                close(file_input);
+                dup2(file_output, 1);
+                close(file_output);
+
+                _exit(j+1); //mata sempre o programa
+        default: //pai
+                printf("criado pid = %d\n", pid);
+      }
+  }
+  for (size_t l = 0; l < nProc; l++) { // ciclo espera pela morte de filhos
+      pid = wait(&status);
+      printf("morreu pid = %d\n", pid);
+      if(WIFEXITED(status)){
+        printf("exit: %d\n", WEXITSTATUS(status));
+      }else{
+        printf("filho nao terminou com exit\n");
+      }
+  }
+  */
