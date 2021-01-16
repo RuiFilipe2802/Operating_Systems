@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
     //write(fd, buffer, sizeof(buffer));
 
     if(argc == 1){ //     Show usage protocol
-        write(1, "./aurras transform input-filename output-filename filter id-1 filter id-2 ...", 78);
+        write(1, "./aurras transform input-filename output-filename filter id-1 filter id-2 ...\n", 79);
         return 1;
     }
 
