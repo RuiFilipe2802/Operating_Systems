@@ -32,9 +32,9 @@ int main(int argc, char *argv[]){
   mkfifo("fifoC_S", 0666);      // CLIENTE -> SERVIDOR
   mkfifo("fifoS_C", 0666);      // SERVIDOR -> CLIENTE
 
-  char path[13] = "../grupo-03/";
+  char path[13] = "../";
   strcat(path, argv[2]);
-  char filtersDestination[13] = "../grupo-03/";
+  char filtersDestination[13] = "../";
   strcat(filtersDestination, argv[1]);
   int configFile = open(filtersDestination, O_RDONLY);
   char iF[9] = "samples/";
@@ -43,6 +43,7 @@ int main(int argc, char *argv[]){
   int sizeBuf;
   int nProc = 0;
   int nLine = 0;
+  int fd ;
   
   char filtersFromClient[10][MAX]; 
 
@@ -76,42 +77,49 @@ int main(int argc, char *argv[]){
     }
     nLine++;
   }
-  printf("%d", nProc);
 
   //int wri = open("logs.txt", O_WRONLY | O_CREAT | O_TRUNC, 0600);
   //int rea = open("logs.txt", O_RDONLY, 0600);
+
+  printf("%d\n", nProc);
+
   int r, m;
   int size;
   int args;
-  char *argums[100];
+  char *argums[50];
   char *p = NULL;
-  int i = 0;
+  //int i = 0;
   char *inputFile, *outputFile;
   int j, status;
   pid_t pid;
+  
 
   while(1){
-
-  int fd = open("fifoC_S", O_RDONLY);
+  fd = open("fifoC_S", O_RDONLY);
   read(fd, &args, sizeof(int));           // GET NUMBER OF ARGUMENTS
   read(fd, &size, sizeof(int));           // GET SIZE MESSAGE
   char buffer[size];
   read(fd, buffer, size);                 // GET MESSAGE
+  int i = 0;
 
   for(p = strtok(buffer, " \n"); p != NULL;p = strtok(NULL, " ")){
     argums[i] = strdup(p);
+    printf("Args[%d]:%s\n",i, argums[i]);
     i++; 
+    
   }
   inputFile = argums[0];
   outputFile = argums[1];
 
   for(m = 2;m < args;m++){ 
     strcpy(filtersFromClient[m-2],argums[m]);
-    printf("%s\n", filtersFromClient[m-2]);
+    //printf("%s\n", filtersFromClient[m-2]);
+  }
+  //execl(path, path, NULL);
+
   }
 
-  //execl(path, path, NULL);
-  }
+
   return 0;
 }
 /*
