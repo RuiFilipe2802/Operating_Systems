@@ -10,7 +10,34 @@
 #define MAX 50
 
 //    SERVIDOR
+/*void exeFun(char *path, char *inp, char *out, char *fil){
+  int file_input;
+  int file_output;
+  char iF[9] = "samples/"; 
+  pid_t pid;
+  pid = fork();
+      switch (pid) {
+        case -1: //erro
+                perror("fork");
+                //return 1;
+        case 0: //filhos
+                
+                strcat(path, fil);
+                strcat(iF, inp);
+                printf("Path:%s\n", path);
+                file_input = open(iF, O_RDONLY);
+                file_output = open(out, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                dup2(file_input, 0); 
+                close(file_input);
+                dup2(file_output, 1);
+                close(file_output);
 
+                _exit(1); //mata sempre o programa
+        default: //pai
+                printf("criado pid = %d\n", pid);
+      }
+
+}*/
 
 int readln(int fd, char *line, int size){
   int i=0, n;
@@ -32,13 +59,11 @@ int main(int argc, char *argv[]){
   mkfifo("fifoC_S", 0666);      // CLIENTE -> SERVIDOR
   mkfifo("fifoS_C", 0666);      // SERVIDOR -> CLIENTE
 
-  char path[13] = "../";
+  char path[50] = "../";
   strcat(path, argv[2]);
   char filtersDestination[13] = "../";
   strcat(filtersDestination, argv[1]);
   int configFile = open(filtersDestination, O_RDONLY);
-  char iF[9] = "samples/";
-  int file_input, file_output;
   char buf[25];
   int sizeBuf;
   int nProc = 0;
@@ -91,37 +116,48 @@ int main(int argc, char *argv[]){
   //int i = 0;
   char *inputFile, *outputFile;
   int j, status;
-  pid_t pid;
   
 
+
+ fd = open("fifoC_S", O_RDONLY);
   while(1){
-  fd = open("fifoC_S", O_RDONLY);
-  read(fd, &args, sizeof(int));           // GET NUMBER OF ARGUMENTS
-  read(fd, &size, sizeof(int));           // GET SIZE MESSAGE
-  char buffer[size];
-  read(fd, buffer, size);                 // GET MESSAGE
-  int i = 0;
+    while(read(fd, &args, sizeof(int))>0 ){
+                                         // GET NUMBER OF ARGUMENTS
+      read(fd, &size, sizeof(int));           // GET SIZE MESSAGE
+      char buffer[size];
+      read(fd, buffer, size);                 // GET MESSAGE
+      int i = 0;
 
-  for(p = strtok(buffer, " \n"); p != NULL;p = strtok(NULL, " ")){
-    argums[i] = strdup(p);
-    printf("Args[%d]:%s\n",i, argums[i]);
-    i++; 
+      for(p = strtok(buffer, " \n"); p != NULL;p = strtok(NULL, " ")){
+            argums[i] = strdup(p);
+            printf("Args[%d]:%s\n",i, argums[i]);
+             i++; 
     
-  }
-  inputFile = argums[0];
-  outputFile = argums[1];
+      }
+        inputFile = argums[0];
+        outputFile = argums[1];
+        printf("%s\n", outputFile);
+        char filtro[50];
+        printf("Filtro:%s\n", arrExec[0][MAX]);
+        printf("%s", argums[2]);
+        if(strcmp(argums[2],"alto")){
+          printf("boas");
+          strcpy(filtro, arrExec[0][MAX]);
+          //exeFun(path,inputFile,outputFile,filtro);
+        }
+        for(m = 2;m < args;m++){ 
+            strcpy(filtersFromClient[m-2],argums[m]);
+            //printf("%s\n", filtersFromClient[m-2]);
+         }         
 
-  for(m = 2;m < args;m++){ 
-    strcpy(filtersFromClient[m-2],argums[m]);
-    //printf("%s\n", filtersFromClient[m-2]);
-  }
-  //execl(path, path, NULL);
-
+        sleep(1);
+    }
   }
 
 
   return 0;
 }
+
 /*
 for (j = 0; j != nProc; j++) {  //ciclo criacao filhos
       pid = fork();
